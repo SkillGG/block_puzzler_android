@@ -1,7 +1,7 @@
 name: blockpuzzler
-description: A new Flutter project.
+description: A puzzle game for android
 publish_to: "none"
-version: 0.1.0
+version: 0.1.1
 
 environment:
     sdk: ">=3.0.6 <4.0.0"
@@ -10,6 +10,7 @@ dependencies:
     flame: ^1.8.1
     flutter:
         sdk: flutter
+    package_info_plus: ^4.0.2
 
 dev_dependencies:
     flutter_test:
@@ -23,3 +24,8 @@ flutter:
         - assets/images/Red.png
         - assets/images/Green.png
         - assets/images/Yellow.png
+    fonts:
+        - family: Lumanosimo
+          fonts:
+            - asset: assets/fonts/Lumanosimo-Regular.ttf 
+              style: normal

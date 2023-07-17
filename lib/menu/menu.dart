@@ -16,19 +16,21 @@ class MainMenu extends Component with TapCallbacks, HasGameRef<BlockPuzzler> {
   @override
   FutureOr<void> onLoad() {
     menuLabel = Label(
-        position: Vector2(BlockPuzzler.width / 2, 100),
+        position: BlockPuzzler.topCenter + Vector2(0, 2 * em + 20),
         anchor: Anchor.center,
         size: Vector2(0, 0),
-        text: "BlockPuzzler",
+        text: "Block Puzzler",
         options: LabelOptions(
             borderColor: Colors.transparent,
             textStyle: const TextStyle(
-                fontSize: 50, color: Colors.black, fontFamily: "Arial")));
+                fontSize: 16 * 1.5,
+                color: Colors.black,
+                fontFamily: "Lumanosimo")));
     startButton = Button(
         position: BlockPuzzler.center - Vector2(50, 225),
         size: Vector2(100, 50),
         onup: () {
-          gameRef.router.pushNamed("game");
+          gameRef.state = GameState.game;
           startButton.label.restoreStyles();
         },
         ondown: () {

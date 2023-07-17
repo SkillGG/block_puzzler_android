@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:blockpuzzler/Playfield/playmap/playmap.dart';
-import 'package:blockpuzzler/UI/ui.dart';
 import 'package:blockpuzzler/comps/tile.dart';
 import 'package:blockpuzzler/game.dart';
 import 'package:flame/components.dart';
@@ -9,13 +8,7 @@ import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 
 class PlayfieldRoute extends Route with HasGameRef<BlockPuzzler> {
-  UI ui;
-
-  PlayfieldRoute()
-      : ui = UI(),
-        super(Playfield.new) {
-    add(ui);
-  }
+  PlayfieldRoute() : super(Playfield.new);
 
   Playfield get playfield => firstChild() as Playfield;
 }
