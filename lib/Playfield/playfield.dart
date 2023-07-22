@@ -19,14 +19,27 @@ class Playfield extends Component with HasGameRef<BlockPuzzler> {
 
   @override
   FutureOr<void> onLoad() async {
-    var list = await Future.wait([
-      ("Blue.png", TileColor.blue),
-      ("Green.png", TileColor.green),
-      ("Red.png", TileColor.red),
-      ("Yellow.png", TileColor.yellow)
+    var tileColorSprites = await Future.wait([
+      ("Tiles/Blue.png", TileColor.blue),
+      ("Tiles/Green.png", TileColor.green),
+      ("Tiles/Red.png", TileColor.red),
+      ("Tiles/Yellow.png", TileColor.yellow)
     ].map((e) async => (e.$2, await Flame.images.load(e.$1))));
-    for (var element in list) {
-      Tile.tileImages[element.$1] = element.$2;
+    var pathSprites = await Future.wait([
+      ("Paths/lb.png", PathBlock.lb),
+      ("Paths/lt.png", PathBlock.lt),
+      ("Paths/rb.png", PathBlock.rb),
+      ("Paths/rt.png", PathBlock.rt),
+      ("Paths/end.png", PathBlock.end),
+      ("Paths/err.png", PathBlock.err),
+      ("Paths/horizontal.png", PathBlock.horizontal),
+      ("Paths/vertical.png", PathBlock.vertical)
+    ].map((e) async => (e.$2, await Flame.images.load(e.$1))));
+    for (var (color, img) in tileColorSprites) {
+      Tile.tileImages[color] = img;
+    }
+    for (var (pb, img) in pathSprites) {
+      Tile.pathImages[pb] = img;
     }
     map.createAMap(10, 10);
     add(map);

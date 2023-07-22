@@ -3,6 +3,7 @@ import 'package:blockpuzzler/Playfield/playfield.dart';
 import 'package:blockpuzzler/UI/ui.dart';
 import 'package:blockpuzzler/main.dart';
 import 'package:blockpuzzler/menu/menu.dart';
+import 'package:blockpuzzler/world.dart';
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
@@ -25,7 +26,7 @@ class BlockPuzzler extends FlameGame {
         _menu = MainMenu(),
         super();
 
-  final world = World();
+  final world = GameWorld();
   late final CameraComponent cameraComponent;
 
   static double get width => 600;
@@ -68,6 +69,7 @@ class BlockPuzzler extends FlameGame {
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
+
     cameraComponent = CameraComponent(
         world: world,
         viewport: FixedAspectRatioViewport(aspectRatio: width / height)

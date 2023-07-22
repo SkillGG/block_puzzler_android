@@ -4,6 +4,24 @@ import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image;
 
+class Coords {
+  int col;
+  int row;
+  Coords(this.col, this.row);
+
+  @override
+  int get hashCode => col + row * 100;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is Coords) {
+      return other.col == col && other.row == row;
+    } else {
+      return false;
+    }
+  }
+}
+
 enum TileColor {
   none(Colors.transparent),
   blue(Colors.blue),
@@ -11,39 +29,72 @@ enum TileColor {
   yellow(Colors.yellow),
   green(Colors.green);
 
-  final Color c;
+  final Color color;
 
-  const TileColor(this.c);
+  const TileColor(this.color);
+}
+
+enum PathBlock {
+  none,
+  horizontal,
+  vertical,
+  end,
+  err,
+  lt,
+  rt,
+  lb,
+  rb,
 }
 
 class Tile extends PositionComponent
     with TapCallbacks, HasGameRef<BlockPuzzler> {
+  String id;
+
+  PathBlock _pathBlock = PathBlock.none;
+  static Map<PathBlock, Image?> pathImages = {PathBlock.none: null};
+  Sprite? pathSprite;
+  set pathBlock(PathBlock p) {
+    _pathBlock = p;
+    Image? img = pathImages[p];
+    if (img != null) pathSprite = Sprite(img);
+  }
+
+  PathBlock get pathBlock => _pathBlock;
+
   TileColor _c;
-
-  Sprite? sprite;
-
+  Sprite? tileSprite;
+  static Map<TileColor, Image?> tileImages = {TileColor.none: null};
   set color(TileColor c) {
     _c = c;
     Image? img = tileImages[_c];
-    if (img != null) sprite = Sprite(img);
+    if (img != null) tileSprite = Sprite(img);
   }
 
   TileColor get color => _c;
 
-  static Map<TileColor, Image?> tileImages = {TileColor.none: null};
+  TileColor willBecome = TileColor.none;
 
   Vector2 _padding = Vector2.zero();
 
-  (int, int) coords;
+  Coords _coords;
+
+  Coords get coords => _coords;
+
+  set coords(Coords newcoords) {
+    _coords = newcoords;
+    position = Vector2(newcoords.col * size.x, newcoords.row * size.y);
+  }
 
   Tile(
-      {TileColor color = TileColor.none,
+      {required this.id,
+      TileColor color = TileColor.none,
       required super.size,
       required super.position,
-      required this.coords,
+      required Coords coords,
       (int, int?)? padding,
       super.priority})
-      : _c = TileColor.none {
+      : _coords = coords,
+        _c = TileColor.none {
     this.color = color;
     var pad = padding;
     if (pad != null) {
@@ -54,6 +105,13 @@ class Tile extends PositionComponent
         _padding = Vector2(pad.$1.toDouble(), p2.toDouble());
       }
     }
+    tr = TextComponent(
+        anchor: Anchor.center,
+        text: id.replaceAll(RegExp(r'tile_'), ""),
+        position: size / 2,
+        textRenderer: TextPaint(
+            style: const TextStyle(fontSize: 20, color: Colors.black)));
+    // add(tr);
   }
 
   @override
@@ -62,18 +120,53 @@ class Tile extends PositionComponent
         .containsPoint(point);
   }
 
+  late TextComponent tr;
+
   @override
   void render(Canvas canvas) {
     if (_c != TileColor.none) {
-      sprite?.render(canvas, position: _padding, size: size);
+      tileSprite?.render(canvas, position: _padding, size: size);
+    }
+    if (_selected) {
+      // canvas.clipRect(position.toOffset() & size.toSize());
+      canvas.drawRect(
+          Rect.fromLTWH(0, 0, size.x, size.y),
+          Paint()
+            ..color = const Color.fromARGB(50, 0, 0, 0)
+            ..blendMode = BlendMode.darken);
+    }
+    if (willBecome != TileColor.none) {
+      // print("Drawing willBecome $willBecome");
+      canvas.drawCircle(
+          (size / 2).toOffset(), 6, Paint()..color = willBecome.color);
+    }
+
+    if (pathBlock != PathBlock.none) {
+      pathSprite?.render(canvas, position: _padding, size: size);
+    }
+  }
+
+  @override
+  void onLongTapDown(TapDownEvent event) {
+    if (color != TileColor.none) {
+      color = TileColor.values[(color.index + 1) % TileColor.values.length];
     }
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    if (color != TileColor.none) {
-      gameRef.ui.points++;
-      color = TileColor.values[(color.index + 1) % TileColor.values.length];
-    }
+    gameRef.playfield.map.tileTapUp(this);
+  }
+
+  var _selected = false;
+
+  bool get isSelected => _selected;
+
+  select() {
+    _selected = true;
+  }
+
+  deselect() {
+    _selected = false;
   }
 }

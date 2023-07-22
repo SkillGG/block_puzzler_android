@@ -20,12 +20,20 @@ dev_dependencies:
 flutter:
     uses-material-design: true
     assets:
-        - assets/images/Blue.png
-        - assets/images/Red.png
-        - assets/images/Green.png
-        - assets/images/Yellow.png
+        - assets/images/Tiles/Blue.png
+        - assets/images/Tiles/Red.png
+        - assets/images/Tiles/Green.png
+        - assets/images/Tiles/Yellow.png
+        - assets/images/Paths/lt.png
+        - assets/images/Paths/lb.png
+        - assets/images/Paths/rt.png
+        - assets/images/Paths/rb.png
+        - assets/images/Paths/end.png
+        - assets/images/Paths/err.png
+        - assets/images/Paths/horizontal.png
+        - assets/images/Paths/vertical.png
     fonts:
         - family: Lumanosimo
           fonts:
-            - asset: assets/fonts/Lumanosimo-Regular.ttf 
-              style: normal
+              - asset: assets/fonts/Lumanosimo-Regular.ttf
+                style: normal
