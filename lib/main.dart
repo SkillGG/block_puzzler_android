@@ -6,6 +6,11 @@ import 'package:flutter/services.dart';
 
 PackageInfo? packageInfo;
 
+class GameSettings {
+  static const debugShowTileId = false;
+  static bool debugShowPathLines = false;
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   packageInfo = await PackageInfo.fromPlatform();

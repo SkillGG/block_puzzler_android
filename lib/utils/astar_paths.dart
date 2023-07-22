@@ -3,6 +3,14 @@ part of astar;
 class DirectionalAstarPath extends GenericPath<((int, int), PathBlock)> {}
 
 class AstarPath extends GenericPath<(int, int)> {
+  @override
+  String toString() {
+    return fold(
+        "",
+        (previousValue, element) =>
+            "$previousValue => ${element.$1},${element.$2}");
+  }
+
   DirectionalAstarPath toDirectional() {
     final result = DirectionalAstarPath();
     for (int i = 0; i < length; i++) {

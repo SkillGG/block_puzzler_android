@@ -1,4 +1,5 @@
 import 'package:blockpuzzler/game.dart';
+import 'package:blockpuzzler/main.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
@@ -19,6 +20,11 @@ class Coords {
     } else {
       return false;
     }
+  }
+
+  @override
+  String toString() {
+    return "$col/$row";
   }
 }
 
@@ -111,7 +117,7 @@ class Tile extends PositionComponent
         position: size / 2,
         textRenderer: TextPaint(
             style: const TextStyle(fontSize: 20, color: Colors.black)));
-    // add(tr);
+    if (GameSettings.debugShowTileId) add(tr);
   }
 
   @override
@@ -122,10 +128,14 @@ class Tile extends PositionComponent
 
   late TextComponent tr;
 
+  Vector2 offsetXY = Vector2(0, 0);
+  Vector2 offsetSize = Vector2(0, 0);
+
   @override
   void render(Canvas canvas) {
     if (_c != TileColor.none) {
-      tileSprite?.render(canvas, position: _padding, size: size);
+      tileSprite?.render(canvas,
+          position: _padding + offsetXY, size: size + offsetSize);
     }
     if (_selected) {
       // canvas.clipRect(position.toOffset() & size.toSize());

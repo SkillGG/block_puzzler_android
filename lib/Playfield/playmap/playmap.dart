@@ -117,6 +117,8 @@ class Playmap extends PositionComponent
   @override
   void update(double dt) {
     if (!_playable) return;
+    final ma = moveAnimation;
+    if (ma != null) ma.updateAnimation(dt);
   }
 
   void selectTile(Tile t) {
@@ -135,11 +137,13 @@ class Playmap extends PositionComponent
 
   MoveAnimation? moveAnimation;
 
-  startMoveAnim(void Function() cb, Tile t, Coords s, Coords e) {
-    moveAnimation = MoveAnimation(t, s, e);
-    // sleep(const Duration(seconds: 2));
-    cb();
-    moveAnimation = null;
+  startMoveAnim(void Function() cb, Tile t, AstarPath path) {
+    final anim = MoveAnimation(t, () {
+      cb();
+      moveAnimation = null;
+    }, path.map((e) => getTileFromInts(e)).toList());
+    anim.play();
+    moveAnimation = anim;
   }
 
   AstarPath? _preMovePath;
@@ -189,8 +193,10 @@ class Playmap extends PositionComponent
   void onDragUpdate(DragUpdateEvent event) {
     if (moveAnimation != null) return;
     final draggedOn = componentsAtPoint(event.localPosition);
+    var foundTile = false;
     for (final t in draggedOn) {
       if (t is Tile) {
+        foundTile = true;
         if (currentTile != t) {
           final cT = currentTile;
           if (cT != null && cT.pathBlock == PathBlock.err) {
@@ -204,6 +210,7 @@ class Playmap extends PositionComponent
         }
       }
     }
+    if (!foundTile) currentTile = null;
   }
 
   @override
@@ -225,34 +232,46 @@ class Playmap extends PositionComponent
   }
 
   bool trySwappingTiles(Tile t1, Tile t2) {
-    if (t1.color != TileColor.none && t2.color != TileColor.none) return false;
     if (t1.color == TileColor.none && t2.color == TileColor.none) return false;
     if (!canMoveTo(t1, t2)) return false;
-    t1.willBecome = TileColor.none;
-    t2.willBecome = TileColor.none;
-    t1.pathBlock = PathBlock.none;
-    t2.pathBlock = PathBlock.none;
     final sTile = t1.color == TileColor.none ? t2 : t1;
-    final eTile = t1 == sTile ? t2 : t1;
-    final eTileC = eTile.coords;
+    var eTile = t1 == sTile ? t2 : t1;
+    final prevPath = _preMovePath;
+    if (prevPath != null) {
+      if (eTile.color != TileColor.none) {
+        final lastPathTile = getTileFromInts(prevPath.last);
+        if (lastPathTile == sTile) return false;
+        eTile = lastPathTile;
+      }
+      final eTileC = eTile.coords;
+      t1.willBecome = TileColor.none;
+      t2.willBecome = TileColor.none;
+      t1.pathBlock = PathBlock.none;
+      t2.pathBlock = PathBlock.none;
+      startMoveAnim(() {
+        eTile.coords = sTile.coords;
+        sTile.coords = eTileC;
+        selectedTile = null;
+        currentTile = null;
+      }, sTile, prevPath);
+    }
     _tiles[eTile.coords] = sTile;
     _tiles[sTile.coords] = eTile;
     preMovePath = null;
-    startMoveAnim(() {
-      eTile.coords = sTile.coords;
-      sTile.coords = eTileC;
-    }, sTile, sTile.coords, eTile.coords);
     return true;
   }
 
   trySwappingTilesWithSelected(Tile t) {
-    if (t.color != TileColor.none) return;
-    final sT = selectedTile;
-    if (sT == null) {
+    if (t.color != TileColor.none) {
+      preMovePath = null;
       return;
     }
-    if (trySwappingTiles(t, sT)) {
-      deselectTile(sT);
+    final sTile = selectedTile;
+    if (sTile != null) {
+      preMovePath = getAstarPath(sTile, t);
+      if (trySwappingTiles(t, sTile)) {
+        deselectTile(sTile);
+      }
     }
   }
 
